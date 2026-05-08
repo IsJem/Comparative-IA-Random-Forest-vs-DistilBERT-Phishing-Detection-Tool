@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Phishing Detector - Comparativa RF vs DB</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --text-primary: #282A35;
+            --text-secondary: #6c757d;
+            --border-color: #dee2e6;
+            --card-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            --btn-primary: #04AA6D;
+            --btn-primary-hover: #059862;
+            --btn-danger: #f44336;
+            --rf-color: #f44336;
+            --db-color: #04AA6D;
+            --arbitro-color: #ff9800;
+            --winner-bg: #e8f5e9;
+            --bg-gradient-start: #e8f5e9;
+            --bg-gradient-end: #c8e6c9;
+        }
+
+        body.dark {
+            --bg-primary: #1e1e1e;
+            --bg-secondary: #2d2d2d;
+            --text-primary: #e8eaed;
+            --text-secondary: #9aa0a6;
+            --border-color: #3c4043;
+            --card-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            --btn-primary: #059862;
+            --btn-primary-hover: #04AA6D;
+            --btn-danger: #d32f2f;
+            --winner-bg: #1e3a2e;
+            --bg-gradient-start: #1a1a2e;
+            --bg-gradient-end: #16213e;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Source Sans Pro', Arial, sans-serif;
+            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: var(--bg-primary);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: var(--card-shadow);
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--rf-color), var(--db-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-top: 8px;
+        }
+
+        .refresh-btn {
+            background: var(--btn-primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 30px;
+            cursor: pointer;
+            margin-bottom: 25px;
+            font-weight: 600;
+            font-size: 14px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            transition: all 0.2s;
+            box-shadow: var(--card-shadow);
+        }
+
+        .refresh-btn:hover {
+            background: var(--btn-primary-hover);
+            transform: translateY(-2px);
+        }
+
+        .dark-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--bg-primary);
+            border: none;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: var(--card-shadow);
+            z-index: 100;
+            color: var(--text-primary);
+            transition: all 0.2s;
+        }
+
+        .dark-toggle:hover {
+            transform: scale(1.05);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: var(--bg-primary);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+        }
+
+        .card.rf { border-top: 5px solid var(--rf-color); }
+        .card.db { border-top: 5px solid var(--db-color); }
+
+        .card-title {
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-primary);
+        }
+
+        .badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.7em;
+            font-weight: 600;
+            color: white;
+        }
+
+        .badge.rf { background: var(--rf-color); }
+        .badge.db { background: var(--db-color); }
+
+        .metric-row {
+            display: flex;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        .metric {
+            flex: 1;
+            min-width: 100px;
+            text-align: center;
+            padding: 10px;
+        }
+
+        .metric-value {
+            font-size: 2em;
+            font-weight: bold;
+        }
+
+        .metric-value.success { color: var(--btn-primary); }
+        .metric-value.danger { color: var(--btn-danger); }
+
+        .metric-label {
+            font-size: 0.75em;
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+
+        .comparison-card {
+            background: var(--bg-primary);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .comparison-card h3 {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .winner {
+            background: var(--winner-bg);
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: 600;
+            color: var(--btn-primary);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .winner-cell {
+            background: var(--winner-bg);
+            font-weight: bold;
+            border-radius: 8px;
+        }
+
+        .error {
+            color: var(--btn-danger);
+            text-align: center;
+            padding: 20px;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            font-size: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <button class="dark-toggle" id="darkToggle">🌙</button>
+
+    <div class="container">
+        <div class="header">
+            <h1>Phishing Detector</h1>
+            <div class="subtitle">Comparativa en tiempo real: 🌲 Random Forest vs 🤖 DistilBERT</div>
+        </div>
+
+        <button class="refresh-btn" id="refreshBtn">🔄 Actualizar datos</button>
+
+        <div class="stats-grid">
+            <div class="card rf">
+                <div class="card-title">
+                    🌲 Random Forest
+                    <span class="badge rf">ML Tradicional</span>
+                </div>
+                <div id="rfContent">
+                    <div class="loading">Cargando datos del servidor (puerto 5001)...</div>
+                </div>
+            </div>
+
+            <div class="card db">
+                <div class="card-title">
+                    🤖 DistilBERT
+                    <span class="badge db">LLM Ligero</span>
+                </div>
+                <div id="dbContent">
+                    <div class="loading">Cargando datos del servidor (puerto 5000)...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="comparison-card">
+            <h3>📊 Comparación Directa</h3>
+            <div id="comparisonContent">
+                <div class="loading">Esperando datos de los servidores...</div>
+            </div>
+        </div>
+
+        <div class="footer">
+            💡 Los datos se obtienen en tiempo real de los servidores.<br>
+            Marca <strong>Correcto</strong> o <strong>Incorrecto</strong> en la extensión para mejorar los modelos.
+        </div>
+    </div>
+
+    <script>
+        // Modo oscuro/claro
+        const darkToggle = document.getElementById('darkToggle');
+        const savedTheme = localStorage.getItem('comparator_theme');
+
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark');
+            darkToggle.textContent = '☀️';
+        }
+
+        darkToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark');
+            const isDark = document.body.classList.contains('dark');
+            localStorage.setItem('comparator_theme', isDark ? 'dark' : 'light');
+            darkToggle.textContent = isDark ? '☀️' : '🌙';
+        });
+
+        // Función para obtener datos del servidor
+        async function fetchStats(url) {
+            try {
+                console.log(`Fetching: ${url}`);
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                return await response.json();
+            } catch (error) {
+                console.error(`Error fetching ${url}:`, error);
+                return null;
+            }
+        }
+
+        // Cargar todos los datos
+        async function cargarDatos() {
+            console.log("🔄 Cargando datos de los servidores...");
+            
+            // Mostrar loading
+            document.getElementById('rfContent').innerHTML = '<div class="loading">Cargando...</div>';
+            document.getElementById('dbContent').innerHTML = '<div class="loading">Cargando...</div>';
+            document.getElementById('comparisonContent').innerHTML = '<div class="loading">Cargando comparación...</div>';
+            
+            // Obtener datos de RF (puerto 5001)
+            const rfData = await fetchStats('http://127.0.0.1:5001/feedback/stats');
+            
+            // Obtener datos de DB (puerto 5000)
+            const dbData = await fetchStats('http://127.0.0.1:5000/feedback/stats');
+            
+            // Actualizar UI con los datos
+            actualizarUI(rfData, dbData);
+        }
+        
+        // Actualizar la interfaz
+        function actualizarUI(rfData, dbData) {
+            // Mostrar RF
+            if (rfData && !rfData.error) {
+                const total = rfData.total || 0;
+                const correctos = rfData.correctos || 0;
+                const precision = total > 0 ? ((correctos / total) * 100).toFixed(1) : 0;
+                const errores = (rfData.falsos_positivos || 0) + (rfData.falsos_negativos || 0);
+                
+                document.getElementById('rfContent').innerHTML = `
+                    <div class="metric-row">
+                        <div class="metric">
+                            <div class="metric-value success">${precision}%</div>
+                            <div class="metric-label">🎯 Precisión</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value success">${correctos}</div>
+                            <div class="metric-label">✅ Aciertos</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value danger">${errores}</div>
+                            <div class="metric-label">❌ Errores</div>
+                        </div>
+                    </div>
+                    <div class="metric-row">
+                        <div class="metric">
+                            <div class="metric-value danger">${rfData.falsos_positivos || 0}</div>
+                            <div class="metric-label">⚠️ Falsos Positivos</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value danger">${rfData.falsos_negativos || 0}</div>
+                            <div class="metric-label">⚠️ Falsos Negativos</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">${total}</div>
+                            <div class="metric-label">📊 Total Feedback</div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                document.getElementById('rfContent').innerHTML = `
+                    <div class="error">
+                        ❌ Error de conexión<br>
+                        <small>Servidor RF en puerto 5001</small><br>
+                        <small>Ejecuta: python app_rf.py</small>
+                    </div>
+                `;
+            }
+            
+            // Mostrar DB
+            if (dbData && !dbData.error) {
+                const total = dbData.total || 0;
+                const correctos = dbData.correctos || 0;
+                const precision = total > 0 ? ((correctos / total) * 100).toFixed(1) : 0;
+                const errores = (dbData.falsos_positivos || 0) + (dbData.falsos_negativos || 0);
+                
+                document.getElementById('dbContent').innerHTML = `
+                    <div class="metric-row">
+                        <div class="metric">
+                            <div class="metric-value success">${precision}%</div>
+                            <div class="metric-label">🎯 Precisión</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value success">${correctos}</div>
+                            <div class="metric-label">✅ Aciertos</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value danger">${errores}</div>
+                            <div class="metric-label">❌ Errores</div>
+                        </div>
+                    </div>
+                    <div class="metric-row">
+                        <div class="metric">
+                            <div class="metric-value danger">${dbData.falsos_positivos || 0}</div>
+                            <div class="metric-label">⚠️ Falsos Positivos</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value danger">${dbData.falsos_negativos || 0}</div>
+                            <div class="metric-label">⚠️ Falsos Negativos</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">${total}</div>
+                            <div class="metric-label">📊 Total Feedback</div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                document.getElementById('dbContent').innerHTML = `
+                    <div class="error">
+                        ❌ Error de conexión<br>
+                        <small>Servidor DB en puerto 5000</small><br>
+                        <small>Ejecuta: python app_db.py</small>
+                    </div>
+                `;
+            }
+            
+            // Comparación (solo si ambos tienen datos)
+            if (rfData && dbData && !rfData.error && !dbData.error) {
+                const rfTotal = rfData.total || 0;
+                const dbTotal = dbData.total || 0;
+                const rfCorrectos = rfData.correctos || 0;
+                const dbCorrectos = dbData.correctos || 0;
+                const rfPrecision = rfTotal > 0 ? ((rfCorrectos / rfTotal) * 100).toFixed(1) : 0;
+                const dbPrecision = dbTotal > 0 ? ((dbCorrectos / dbTotal) * 100).toFixed(1) : 0;
+                
+                const rfErrores = (rfData.falsos_positivos || 0) + (rfData.falsos_negativos || 0);
+                const dbErrores = (dbData.falsos_positivos || 0) + (dbData.falsos_negativos || 0);
+                
+                const ganadorPrec = rfPrecision > dbPrecision ? '🌲 Random Forest' : (dbPrecision > rfPrecision ? '🤖 DistilBERT' : 'Empate técnico');
+                const ganadorErrores = rfErrores < dbErrores ? '🌲 Random Forest' : (dbErrores < rfErrores ? '🤖 DistilBERT' : 'Empate técnico');
+                
+                document.getElementById('comparisonContent').innerHTML = `
+                    <div class="winner">
+                        🏆 <strong>${ganadorPrec}</strong> tiene mejor precisión
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Métrica</th>
+                                <th>🌲 Random Forest</th>
+                                <th>🤖 DistilBERT</th>
+                                <th>🏆 Ganador</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Precisión</td>
+                                <td>${rfPrecision}%</td>
+                                <td>${dbPrecision}%</td>
+                                <td class="${rfPrecision > dbPrecision ? 'winner-cell' : ''}">${rfPrecision > dbPrecision ? '🌲 RF' : (dbPrecision > rfPrecision ? '🤖 DB' : 'Empate')}</td>
+                            </tr>
+                            <tr>
+                                <td>Aciertos</td>
+                                <td>${rfCorrectos}</td>
+                                <td>${dbCorrectos}</td>
+                                <td class="${rfCorrectos > dbCorrectos ? 'winner-cell' : ''}">${rfCorrectos > dbCorrectos ? '🌲 RF' : (dbCorrectos > rfCorrectos ? '🤖 DB' : 'Empate')}</td>
+                            </tr>
+                            <tr>
+                                <td>Errores Totales</td>
+                                <td>${rfErrores}</td>
+                                <td>${dbErrores}</td>
+                                <td class="${rfErrores < dbErrores ? 'winner-cell' : ''}">${ganadorErrores}</td>
+                            </tr>
+                            <tr>
+                                <td>Falsos Positivos</td>
+                                <td>${rfData.falsos_positivos || 0}</td>
+                                <td>${dbData.falsos_positivos || 0}</td>
+                                <td class="${(rfData.falsos_positivos || 0) < (dbData.falsos_positivos || 0) ? 'winner-cell' : ''}">${(rfData.falsos_positivos || 0) < (dbData.falsos_positivos || 0) ? '🌲 RF' : ((dbData.falsos_positivos || 0) < (rfData.falsos_positivos || 0) ? '🤖 DB' : 'Empate')}</td>
+                            </tr>
+                            <tr>
+                                <td>Falsos Negativos</td>
+                                <td>${rfData.falsos_negativos || 0}</td>
+                                <td>${dbData.falsos_negativos || 0}</td>
+                                <td class="${(rfData.falsos_negativos || 0) < (dbData.falsos_negativos || 0) ? 'winner-cell' : ''}">${(rfData.falsos_negativos || 0) < (dbData.falsos_negativos || 0) ? '🌲 RF' : ((dbData.falsos_negativos || 0) < (rfData.falsos_negativos || 0) ? '🤖 DB' : 'Empate')}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                `;
+            } else {
+                document.getElementById('comparisonContent').innerHTML = `
+                    <div class="error">
+                        ⚠️ Esperando datos de ambos servidores...<br>
+                        <small>Asegúrate que RF (puerto 5001) y DB (puerto 5000) estén corriendo</small>
+                    </div>
+                `;
+            }
+        }
+        
+        // Botón actualizar
+        const refreshBtn = document.getElementById('refreshBtn');
+        refreshBtn.addEventListener('click', () => {
+            cargarDatos();
+        });
+        
+        // Cargar datos al inicio
+        cargarDatos();
+        
+        // Actualizar cada 10 segundos
+        setInterval(cargarDatos, 10000);
+    </script>
+</body>
+</html>
