@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        /* CSS Hecho por DeepSeekV3 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Variables para temas */
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f1f1f1;
+            --text-primary: #282A35;
+            --text-secondary: #666;
+            --border-color: #ddd;
+            --card-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            --btn-primary: #04AA6D;
+            --btn-primary-hover: #059862;
+            --btn-danger: #f44336;
+            --btn-danger-hover: #da190b;
+            --code-bg: #f1f1f1;
+            --arbitro-bg: #fff8e1;
+        }
+
+        body.dark {
+            --bg-primary: #1e1e1e;
+            --bg-secondary: #2d2d2d;
+            --text-primary: #e8eaed;
+            --text-secondary: #9aa0a6;
+            --border-color: #3c4043;
+            --card-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            --btn-primary: #059862;
+            --btn-primary-hover: #04AA6D;
+            --btn-danger: #d32f2f;
+            --btn-danger-hover: #f44336;
+            --code-bg: #2d2d2d;
+            --arbitro-bg: #2d2a1e;
+        }
+
+        body {
+            width: 480px;
+            margin: 0;
+            padding: 16px;
+            font-family: 'Source Sans Pro', 'Segoe UI', Arial, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        h2 {
+            font-size: 22px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #2e7d32, #1565c0);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .theme-toggle {
+            background: var(--bg-secondary);
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: all 0.2s;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.05);
+        }
+
+        .exercise-title {
+            text-align: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+        }
+
+        .result-card {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: var(--card-shadow);
+            border-left: 4px solid var(--border-color);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .card-title {
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .badge {
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .badge.rf { background: #f44336; }
+        .badge.db { background: #04AA6D; }
+        .badge.arbitro { background: #ff9800; color: #333; }
+
+        .verdict {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .verdict.safe { color: #28a745; }
+        .verdict.phishing { color: #dc3545; }
+
+        .confidence {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .confidence-bar {
+            height: 6px;
+            background: var(--border-color);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        .confidence-fill.safe { background: linear-gradient(90deg, #28a745, #34ce57); }
+        .confidence-fill.phishing { background: linear-gradient(90deg, #dc3545, #ff6b6b); }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-correct {
+            background: var(--btn-primary);
+            color: white;
+        }
+
+        .btn-correct:hover {
+            background: var(--btn-primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-wrong {
+            background: var(--btn-danger);
+            color: white;
+        }
+
+        .btn-wrong:hover {
+            background: var(--btn-danger-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-clear {
+            width: 100%;
+            padding: 10px;
+            margin-top: 8px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .btn-clear:hover {
+            background: var(--border-color);
+            transform: translateY(-1px);
+        }
+
+        .btn-stats {
+            width: 100%;
+            padding: 10px;
+            margin-top: 8px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            background: #282A35;
+            color: white;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        body.dark .btn-stats {
+            background: #04AA6D;
+        }
+
+        .btn-stats:hover {
+            background: #000;
+            transform: translateY(-1px);
+        }
+
+        body.dark .btn-stats:hover {
+            background: #059862;
+        }
+
+        .feedback-msg {
+            font-size: 11px;
+            margin-top: 10px;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        .status {
+            font-size: 12px;
+            text-align: center;
+            padding: 10px;
+            margin-top: 10px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            color: var(--text-secondary);
+        }
+
+        .footer {
+            font-size: 11px;
+            text-align: center;
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        .arbitro-card {
+            background: var(--arbitro-bg);
+            border-left: 4px solid #ff9800;
+        }
+
+        .ganador-text {
+            font-size: 16px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .razon-text {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin: 8px 0;
+        }
+
+        .resultado-final {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        code {
+            background: var(--code-bg);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+                /* Estilos adicionales para el feedback completo */
+        .feedback-subsection {
+            margin: 15px 0;
+            padding: 12px;
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+        }
+
+        .subsection-title {
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .subsection-subtitle {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .btn-group-2cols {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .btn-rf {
+            background: #f44336;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-rf:hover {
+            background: #d32f2f;
+            transform: translateY(-1px);
+        }
+
+        .btn-db {
+            background: #4caf50;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-db:hover {
+            background: #388e3c;
+            transform: translateY(-1px);
+        }
+
+        .btn-success {
+            background: #2196f3;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-success:hover {
+            background: #1976d2;
+            transform: translateY(-1px);
+        }
+
+        .btn-danger {
+            background: #ff9800;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-danger:hover {
+            background: #f57c00;
+            transform: translateY(-1px);
+        }
+
+        .btn-arbitro-correct {
+            background: #9c27b0;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-arbitro-correct:hover {
+            background: #7b1fa2;
+            transform: translateY(-1px);
+        }
+
+        .btn-arbitro-wrong {
+            background: #607d8b;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-arbitro-wrong:hover {
+            background: #455a64;
+            transform: translateY(-1px);
+        }
+
+        .btn-primary {
+            background: #04AA6D;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #059862;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-1px);
+        }
+
+        .arbitro-decision-display {
+            background: var(--bg-primary);
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            text-align: center;
+            font-size: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .feedback-status {
+            margin-top: 12px;
+            padding: 8px;
+            text-align: center;
+            font-size: 12px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h2>⚖️ Phishing Detector</h2>
+        <button class="theme-toggle" id="themeToggle">🌙</button>
+    </div>
+
+    <div class="exercise-title">
+        <p>🔒 <strong>Detección de Phishing con ÁRBITRO</strong></p>
+        <p style="font-size: 12px; margin-top: 5px;">
+            🌲 Random Forest vs 🤖 DistilBERT → <strong style="color: #ff9800;">⚖️ ÁRBITRO decide</strong>
+        </p>
+    </div>
+
+    <!-- Tarjeta Random Forest -->
+    <div class="result-card">
+        <div class="card-header">
+            <span class="card-title">🌲 Random Forest</span>
+            <span class="badge rf">ML Tradicional</span>
+        </div>
+        <div class="verdict" id="rfVerdict">⏳ Esperando...</div>
+        <div class="confidence" id="rfConfidence"></div>
+        <div class="confidence-bar">
+            <div class="confidence-fill" id="rfConfidenceFill" style="width: 0%"></div>
+        </div>
+    </div>
+
+    <!-- Tarjeta DistilBERT -->
+    <div class="result-card">
+        <div class="card-header">
+            <span class="card-title">🤖 DistilBERT</span>
+            <span class="badge db">LLM Ligero</span>
+        </div>
+        <div class="verdict" id="dbVerdict">⏳ Esperando...</div>
+        <div class="confidence" id="dbConfidence"></div>
+        <div class="confidence-bar">
+            <div class="confidence-fill" id="dbConfidenceFill" style="width: 0%"></div>
+        </div>
+    </div>
+
+    <!-- Tarjeta del ÁRBITRO (solo cuando discrepan) -->
+    <div id="arbitroCard" class="result-card arbitro-card" style="display: none;">
+        <div class="card-header">
+            <span class="card-title">⚖️ ÁRBITRO · Decisión</span>
+            <span class="badge arbitro">Rompeempates</span>
+        </div>
+        <div class="ganador-text">
+            🏆 <strong>Gana: <span id="arbitroGanador"></span></strong>
+        </div>
+        <div class="razon-text">
+            📝 <span id="arbitroRazon"></span>
+        </div>
+        <div class="razon-text">
+            📊 <span id="arbitroConfianza"></span>
+        </div>
+        <div class="resultado-final">
+            🎯 <strong>Resultado final: <span id="resultadoFinal"></span></strong>
+        </div>
+    </div>
+
+    <!-- ==================== SECCIÓN DE FEEDBACK COMPLETA ==================== -->
+    <div id="feedbackSection" class="result-card" style="display: none;">
+        <div class="card-header">
+            <span class="card-title">📝 Feedback del Usuario</span>
+            <span class="badge arbitro">Ayuda a mejorar</span>
+        </div>
+        
+        <!-- CASO 1: MODELOS COINCIDEN -->
+        <div id="modelosCoincidenFeedback" class="feedback-subsection">
+            <div class="subsection-title">📊 Los modelos coincidieron</div>
+            <div class="subsection-subtitle">¿El resultado fue correcto?</div>
+            <div class="btn-group-2cols">
+                <button id="feedbackBothCorrect" class="btn btn-success">✅ Ambos acertaron</button>
+                <button id="feedbackBothWrong" class="btn btn-danger">❌ Ambos fallaron</button>
+            </div>
+        </div>
+        
+        <!-- CASO 2: MODELOS DISCREPAN -->
+        <div id="modelosDiscrepanFeedback" class="feedback-subsection" style="display: none;">
+            <div class="subsection-title">📊 Los modelos discreparon</div>
+            <div class="subsection-subtitle">¿Quién tenía la razón?</div>
+            <div class="btn-group-2cols">
+                <button id="feedbackRFCorrect" class="btn btn-rf">🌲 RF acertó</button>
+                <button id="feedbackDBCorrect" class="btn btn-db">🤖 DB acertó</button>
+            </div>
+        </div>
+        
+        <!-- SECCIÓN DEL ÁRBITRO (solo cuando discrepan) -->
+        <div id="arbitroFeedbackSubsection" class="feedback-subsection" style="display: none;">
+            <div class="subsection-title">⚖️ El ÁRBITRO decidió que ganaba:</div>
+            <div id="arbitroDecisionDisplay" class="arbitro-decision-display"></div>
+            <div class="subsection-subtitle">¿El ÁRBITRO acertó?</div>
+            <div class="btn-group-2cols">
+                <button id="feedbackArbitroCorrect" class="btn btn-arbitro-correct">✅ ÁRBITRO acertó</button>
+                <button id="feedbackArbitroWrong" class="btn btn-arbitro-wrong">❌ ÁRBITRO falló</button>
+            </div>
+        </div>
+        
+        <!-- Botones de acción -->
+        <div class="btn-group">
+            <button id="submitFeedbackBtn" class="btn btn-primary">📤 Enviar Feedback</button>
+            <button id="clearFeedbackBtn" class="btn btn-secondary">🗑️ Limpiar</button>
+        </div>
+        
+        <div id="feedbackStatusMsg" class="feedback-status"></div>
+    </div>
+
+    <button id="clearBtn" class="btn-clear">🗑️ Limpiar resultados</button>
+    <button id="statsBtn" class="btn-stats">📊 Ver Estadísticas</button>
+
+    <div id="status" class="status">✅ Listo. Selecciona texto → Clic derecho → Analizar</div>
+    <div class="footer">
+        ⚖️ <strong>ÁRBITRO:</strong> Random Forest gana por defecto (resultados del proyecto).<br>
+        🤖 DistilBERT solo gana en inglés puro + texto corto.<br>
+        📝 Tu feedback ayuda al ÁRBITRO a mejorar.
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+{
+  "manifest_version": 3,
+  "name": "Phishing Detector - Random Forest",
+  "version": "2.0",
+  "description": "Detección de Phishing con Random Forest - Modelo superior vs DistilBERT",
+  "permissions": [
+    "activeTab",
+    "contextMenus",
+    "storage",
+    "notifications"
+  ],
+  "host_permissions": [
+    "http://127.0.0.1:5001/*",
+    "http://localhost:5001/*"
+  ],
+  "icons": {
+    "128": "IA.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "🌲 Detectar Phishing con Random Forest",
+    "default_icon": "IA.png"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_end"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["stats.html"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

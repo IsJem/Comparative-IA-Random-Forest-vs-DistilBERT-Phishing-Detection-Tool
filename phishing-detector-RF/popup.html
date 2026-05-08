@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phishing Detector - Random Forest</title>
+    <style>
+    /* CSS hecho con DeepseekV3 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 450px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: #f8f9fa;
+            color: #212529;
+            padding: 16px;
+            transition: all 0.3s ease;
+        }
+
+        /* Tema oscuro */
+        body[data-theme="dark"] {
+            background: #1a1a2e;
+            color: #f0f0f0;
+        }
+
+        body[data-theme="dark"] .result-card,
+        body[data-theme="dark"] .feedback-section,
+        body[data-theme="dark"] .exercise-title {
+            background: #16213e;
+            border-color: #2c3e50;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        h2 {
+            font-size: 20px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #2e7d32, #1b5e20);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .theme-toggle {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        body[data-theme="dark"] .theme-toggle {
+            background: #16213e;
+            border-color: #2c3e50;
+            color: #f0f0f0;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.05);
+        }
+
+        .exercise-title {
+            background: #e8f5e9;
+            padding: 12px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 20px;
+            border: 1px solid #dee2e6;
+        }
+
+        body[data-theme="dark"] .exercise-title {
+            background: #1b3a1f;
+        }
+
+        .result-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            border: 1px solid #dee2e6;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: all 0.3s;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .badge {
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        .badge.rf {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        body[data-theme="dark"] .badge.rf {
+            background: #2e7d32;
+            color: #e8f5e9;
+        }
+
+        .verdict {
+            font-size: 24px;
+            font-weight: 700;
+            margin: 12px 0;
+        }
+
+        .verdict.safe {
+            color: #28a745;
+        }
+
+        .verdict.phishing {
+            color: #dc3545;
+        }
+
+        .confidence {
+            font-size: 13px;
+            color: #6c757d;
+            background: #f8f9fa;
+            padding: 8px;
+            border-radius: 8px;
+            margin-top: 8px;
+        }
+
+        body[data-theme="dark"] .confidence {
+            background: #1a1a2e;
+            color: #aaa;
+        }
+
+        .confidence-bar {
+            height: 6px;
+            background: #dee2e6;
+            border-radius: 3px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        .confidence-fill.safe {
+            background: linear-gradient(90deg, #28a745, #34ce57);
+        }
+
+        .confidence-fill.phishing {
+            background: linear-gradient(90deg, #dc3545, #ff6b6b);
+        }
+
+        .feedback-section {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            border: 1px solid #dee2e6;
+        }
+
+        .feedback-title {
+            font-weight: 600;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-correct {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-correct:hover {
+            background: #218838;
+            transform: translateY(-1px);
+        }
+
+        .btn-wrong {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-wrong:hover {
+            background: #c82333;
+            transform: translateY(-1px);
+        }
+
+        .btn-clear {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            color: #212529;
+            width: 100%;
+            margin-bottom: 8px;
+        }
+
+        body[data-theme="dark"] .btn-clear {
+            background: #2c3e50;
+            border-color: #1a1a2e;
+            color: #f0f0f0;
+        }
+
+        .btn-compare {
+            background: linear-gradient(135deg, #2e7d32, #1b5e20);
+            color: white;
+            width: 100%;
+            margin-bottom: 8px;
+        }
+
+        .feedback-msg {
+            font-size: 12px;
+            margin-top: 10px;
+            padding: 8px;
+            border-radius: 8px;
+            background: #f8f9fa;
+            color: #6c757d;
+        }
+
+        body[data-theme="dark"] .feedback-msg {
+            background: #1a1a2e;
+        }
+
+        .status {
+            font-size: 12px;
+            color: #6c757d;
+            text-align: center;
+            padding: 10px;
+            background: white;
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+
+        body[data-theme="dark"] .status {
+            background: #16213e;
+        }
+
+        .footer {
+            font-size: 11px;
+            color: #6c757d;
+            text-align: center;
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px solid #dee2e6;
+        }
+
+        body[data-theme="dark"] .footer {
+            border-top-color: #2c3e50;
+        }
+
+        .stat-badge {
+            display: inline-block;
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 11px;
+            margin-right: 8px;
+        }
+
+        body[data-theme="dark"] .stat-badge {
+            background: #2e7d32;
+            color: #e8f5e9;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h2>🌲 Phishing Detector</h2>
+        <button class="theme-toggle" id="themeToggle">🌙</button>
+    </div>
+
+    <div class="exercise-title">
+        <p>🔒 <strong>Detección de Phishing con Random Forest</strong></p>
+        
+    <!-- Tarjeta Random Forest (único modelo) -->
+    <div class="result-card">
+        <div class="card-header">
+            <span class="card-title">
+                🌲 Random Forest
+            </span>
+
+        </div>
+        <div class="verdict" id="rfVerdict">⏳ Esperando...</div>
+        <div class="confidence" id="rfConfidence"></div>
+        <div class="confidence-bar" id="confidenceBar">
+            <div class="confidence-fill" id="confidenceFill" style="width: 0%"></div>
+        </div>
+    </div>
+
+    <!-- Sección de Feedback (solo para RF) -->
+    <div id="feedbackSection" class="feedback-section" style="display: none;">
+        <div class="feedback-title">📝 ¿El modelo acertó?</div>
+        <div class="btn-group">
+            <button id="feedbackCorrect" class="btn btn-correct">✅ Sí, acertó</button>
+            <button id="feedbackWrong" class="btn btn-wrong">❌ No, falló</button>
+        </div>
+        <div id="feedbackMsg" class="feedback-msg"></div>
+    </div>
+
+    <button id="clearBtn" class="btn btn-clear">🗑️ Limpiar resultados</button>
+    <button id="statsBtn" class="btn btn-compare">📊 Ver Estadísticas del Modelo</button>
+
+    <div id="status" class="status">✅ Listo. Selecciona texto → Clic derecho → Analizar con Random Forest</div>
+    <div class="footer">
+        🌲 Random Forest fue seleccionado como modelo superior tras comparativa con DistilBERT.<br>
+        ✅ Más rápido (10x), más liviano (5 MB) y fácil de reentrenar.
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>
